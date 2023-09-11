@@ -1,4 +1,4 @@
-name: intro_hello_world
+name: hello_world_test
 steps:
   - name: first
     type: Bash
