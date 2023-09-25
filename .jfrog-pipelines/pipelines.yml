@@ -1,3 +1,12 @@
+resources:
+  - name: test
+    type: GitRepo
+    configuration:
+      gitProvider: deepak_git
+      path: creepy-pirate/pipelines-hello-world
+      branches:
+        include: "{{ gitBranch }}"
+        
 name: hello_world_test
 steps:
   - name: first
