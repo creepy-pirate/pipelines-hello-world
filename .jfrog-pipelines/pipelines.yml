@@ -1,98 +1,188 @@
-resources:
-  - name: test
-    type: GitRepo
-    configuration:
-      gitProvider: deepak_git
-      path: creepy-pirate/pipelines-hello-world
-      branches:
-        include: "{{ gitBranch }}"
+# resources:
+#   - name: test
+#     type: GitRepo
+#     configuration:
+#       gitProvider: deepak_git
+#       path: creepy-pirate/pipelines-hello-world
+#       branches:
+#         include: "{{ gitBranch }}"
         
-name: hello_world_test
-steps:
-  - name: first
-    type: Bash
-    execution:
-      onStart:
-        - >-
-          echo "onStart can be used to do some setup or initialization of your
-          dependencies to prepare for the execution."
-      onExecute:
-        - >-
-          echo "onExecute is the main section where you would issue your
-          build/test commands"
-        - jfrog --version
-      onSuccess:
-        - >-
-          echo "onSuccess executes if the onStart or onExecute sections
-          completed without errors"
-      onFailure:
-        - >-
-          echo "onFailure executes if either onStart or onExecute end in failure
-          or error."
-      onComplete:
-        - echo "onComplete executes after onSuccess or onFailure"
-  - name: variable_selection
-    type: Bash
+# name: hello_world_test
+# steps:
+#   - name: first
+#     type: Bash
+#     execution:
+#       onStart:
+#         - >-
+#           echo "onStart can be used to do some setup or initialization of your
+#           dependencies to prepare for the execution."
+#       onExecute:
+#         - >-
+#           echo "onExecute is the main section where you would issue your
+#           build/test commands"
+#         - jfrog --version
+#       onSuccess:
+#         - >-
+#           echo "onSuccess executes if the onStart or onExecute sections
+#           completed without errors"
+#       onFailure:
+#         - >-
+#           echo "onFailure executes if either onStart or onExecute end in failure
+#           or error."
+#       onComplete:
+#         - echo "onComplete executes after onSuccess or onFailure"
+#   - name: variable_selection
+#     type: Bash
+#     configuration:
+#       inputSteps:
+#         - name: first
+#       environmentVariables:
+#         forceFail:
+#           default: 'false'
+#           description: set to 'true' to force the step to fail.
+#           values:
+#             - 'false'
+#             - 'true'
+#     execution:
+#       onStart:
+#         - 'if [ ${forceFail} == "true" ]; then exit 1; fi'
+#       onExecute:
+#         - echo "This step will succeed"
+#       onFailure:
+#         - echo "step has failed."
+#       onSuccess:
+#         - echo "step has succeeded."
+#       onComplete:
+#         - >-
+#           echo "onComplete executes regardless of success or failure. forceFail
+#           is ${forceFail}"
+#   - name: add_run_variable
+#     type: Bash
+#     configuration:
+#       inputSteps:
+#         - name: first
+#     execution:
+#       onStart:
+#         - echo "This step will save a value to a run variable."
+#       onExecute:
+#         - >-
+#           add_run_variables step_info="runNumber $run_number, step_name
+#           $step_name, pipeline_name $pipeline_name"
+#   - name: write_to_resource
+#     type: Bash
+#     configuration:
+#       inputSteps:
+#         - name: add_run_variable
+#         - name: variable_selection
+#       outputResources:
+#         - name: intro_bag
+#     execution:
+#       onStart:
+#         - echo "Printing the run variable 'step_info' from previous step"
+#         - 'echo "${step_info}"'
+#       onExecute:
+#         - echo "Updating resource intro_bag with new key/value pairs"
+#         - write_output intro_bag "timestamp=$(date +%s)"
+#         - 'write_output intro_bag "releaseVersion=${pipeline_name}.${run_number}"'
+#         - 'write_output intro_bag "stepInfo=${step_info}"'
+#   - name: read_from_resource
+#     type: Bash
+#     configuration:
+#       inputResources:
+#         - name: intro_bag
+#     execution:
+#       onExecute:
+#         - echo "printing resource details"
+#         - 'echo "Release Version is -- ${res_intro_bag_releaseVersion}"'
+#         - 'echo "Release timestamp is -- ${res_intro_bag_timestamp}"'
+#         - 'echo "Step Info is -- ${res_intro_bag_stepInfo}"'
+pipelines:
+  - name: single_test
     configuration:
-      inputSteps:
-        - name: first
       environmentVariables:
-        forceFail:
-          default: 'false'
-          description: set to 'true' to force the step to fail.
-          values:
-            - 'false'
-            - 'true'
-    execution:
-      onStart:
-        - 'if [ ${forceFail} == "true" ]; then exit 1; fi'
-      onExecute:
-        - echo "This step will succeed"
-      onFailure:
-        - echo "step has failed."
-      onSuccess:
-        - echo "step has succeeded."
-      onComplete:
-        - >-
-          echo "onComplete executes regardless of success or failure. forceFail
-          is ${forceFail}"
-  - name: add_run_variable
-    type: Bash
-    configuration:
-      inputSteps:
-        - name: first
-    execution:
-      onStart:
-        - echo "This step will save a value to a run variable."
-      onExecute:
-        - >-
-          add_run_variables step_info="runNumber $run_number, step_name
-          $step_name, pipeline_name $pipeline_name"
-  - name: write_to_resource
-    type: Bash
-    configuration:
-      inputSteps:
-        - name: add_run_variable
-        - name: variable_selection
-      outputResources:
-        - name: intro_bag
-    execution:
-      onStart:
-        - echo "Printing the run variable 'step_info' from previous step"
-        - 'echo "${step_info}"'
-      onExecute:
-        - echo "Updating resource intro_bag with new key/value pairs"
-        - write_output intro_bag "timestamp=$(date +%s)"
-        - 'write_output intro_bag "releaseVersion=${pipeline_name}.${run_number}"'
-        - 'write_output intro_bag "stepInfo=${step_info}"'
-  - name: read_from_resource
-    type: Bash
-    configuration:
-      inputResources:
-        - name: intro_bag
-    execution:
-      onExecute:
-        - echo "printing resource details"
-        - 'echo "Release Version is -- ${res_intro_bag_releaseVersion}"'
-        - 'echo "Release timestamp is -- ${res_intro_bag_timestamp}"'
-        - 'echo "Step Info is -- ${res_intro_bag_stepInfo}"'
+        readOnly:
+          env: 
+            default: "singletest"
+            values: ["singletest", "testing"]
+            allowCustom: false
+          env2: "test_p2"
+          # env3:
+          #   defaultMultipleValues: ["r,andom_1"]
+          #   # default: "r,andom_2"
+          #   description: "testing"
+          #   values: ["r,andom_1", "r,andom_2", "r,andom_3", "r,andom_4"]
+          #   allowCustom: false
+          #   allowMultipleValues: false
+    steps:
+#       # - name: step_1
+#       #   type: Bash
+#       #   configuration:
+#       #     integrations:
+#       #       - name: testing
+#       #   execution:
+#       #     onExecute:
+#       #       - echo $int_testing_val1
+#       #       - echo $int_testing_val2
+#       #       - |
+#       #         if [ $int_testing_val1 = "password1" ]; then
+#       #           echo matched
+#       #         else
+#       #           echo NotMatched
+#       #         fi
+#       #       - |
+#       #         if [ $int_testing_val2 = "password2" ]; then
+#       #           echo matched
+#       #         else
+#       #           echo NotMatched
+#       #         fi
+      - name: trigger_1
+        type: Bash
+        configuration:
+          affinityGroup: trigger
+          # inputResources:
+            # - name: propertyBag_1
+          #   - name: resource_4
+            # - name: resource_1
+          # outputResources:
+          #   - name: myResource
+          #   - name: myResource1
+          #   - name: myResource2
+        execution:
+          onExecute:
+            - printenv
+            - echo $env
+            - echo $env2
+            # - write_output myResource runNumber=${run_number}
+            # - write_output myResource1 runNumber1=${run_number}
+            # - write_output myResource2 runNumber2=${run_number}
+            - echo $env3
+            - echo 
+      #       - echo $res_resource_1_path
+      #       - echo $res_resource_3_path
+      #       - write_output myResource runNumber=${run_number}
+      #       - echo ${run_number}
+      #       - echo "done"
+      - name: trigger_2
+        type: Bash
+        configuration:
+          # inputResources:
+          #   - name: myResource
+          #     newVersionOnly: true
+          #   - name: myResource1
+          #     newVersionOnly: true
+          #   - name: myResource2
+          #     newVersionOnly: true
+          chronological: true
+      #     affinityGroup: trigger
+          inputSteps: 
+            - name: trigger_1
+            # - name: step_1
+        execution:
+          onExecute:
+            - printenv
+            - echo ${#env3[@]}
+            - echo ${env3[2]}
+            - echo $env
+            - echo $env2
+            - echo ${env3[0]}
+            - echo "Running second trigger done"
